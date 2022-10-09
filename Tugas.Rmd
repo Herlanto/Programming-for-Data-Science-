@@ -1,0 +1,248 @@
+---
+title: 'Tugas LBB: Programming for Data Science'
+author: "Herlanto"
+date: "10/9/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+untuk membaca file
+```{r}
+# Data Input and Checking Data
+noodle <- read.csv("data_input/retail.csv")
+head(noodle, 10)
+```
+```{r}
+str(noodle) # melihat struktur data
+```
+```{r}
+#tail(noodle)
+```
+Terdapat 4 tipe data dasar yang sering digunakan di R yaitu : 
+
+```{r}
+# character
+a_char <- c("algoritma", "dss", "ab testing")
+
+# numeric
+a_num <- c(12.5, 20.9, 13.3)
+
+# integer
+a_int <- c(1L, 4L, 2013L, 2022L)
+
+# logical
+a_logic <- c(T, F, TRUE, FALSE)
+
+```
+
+Cara untuk mengetahui tipe data dari suatu objek, Anda dapat menggunakan fungsi `class()`
+```{r}
+class(a_char)
+```
+```{r}
+dim(noodle)
+```
+```{r}
+names(noodle)
+```
+
+dengan menggunakan Clenasing & Coertions
+```{r}
+str(noodle)
+```
+```{r}
+noodle$Row.ID <- as.character(noodle$Row.ID)
+noodle$Order.ID<- as.character (noodle$Order.ID)
+noodle$Order.Date<- as.Date(noodle$Order.Date, "%m/%d/%y")
+noodle$Ship.Date <- as.Date(noodle$Ship.Date, "%m/%d/%y")
+noodle$Customer.ID<-as.character(noodle$Customer.ID)
+noodle$Product.ID<- as.character(noodle$Product.ID)
+noodle$Product.Name<-as.character(noodle$Product.Name)
+
+str(noodle)
+```
+```{r}
+colSums(is.na(noodle))
+```
+
+```{r}
+anyNA(noodle)
+```
+
+```{r}
+Noodle<- noodle[,c(3:15)]
+head(Noodle)
+```
+```{r}
+noodle<- noodle[,c(3:15)]
+head(noodle)
+```
+
+Data Explanation
+
+```{r}
+summary(noodle)
+```
+
+melakukan cek outlier di profit
+```{r}
+aggregate(Profit~Segment,noodle,mean)
+```
+
+
+```{r}
+aggregate(Profit~Segment,noodle,var)
+```
+
+
+
+```{r}
+aggregate(Profit~Segment,noodle,sd)
+```
+
+
+
+```{r}
+boxplot(noodle$Profit)
+```
+
+
+
+data manipulation & transformation
+mencari profit terendah
+```{r}
+noodle[noodle$Sales == 0.444,]
+```
+
+
+mencari yang membeli suppies paling banyak
+```{r}
+os <- noodle[noodle$Category=="Office Supplies",]
+round(prop.table(table(os$Segment))*100,2)
+```
+
+mencari banyak pembelian untuk mendapatkan diskon 80%
+```{r}
+dis<-noodle[noodle$Discount==0.8,]
+(sort(table(dis$Order.Date),decreasing = T)[1])
+```
+
+pembeli yang membeli 80%
+```{r}
+xtabs(Quantity~Segment+Category,noodle)
+```
+
+
+```{r}
+plot(xtabs(Quantity~Segment+Category,noodle))
+```
+
+```{r}
+heatmap(xtabs(Quantity~Segment+Category, noodle), cexRow = 0.8, cexCol = 0.8, scale = "column", Colv = NA, Rowv = NA)
+```
+
+Median kuantitas untuk setiap segmen dan kategori
+```{r}
+aggregate(Quantity~Segment+Category,noodle,median)
+```
+total quantity saat noodle di jual
+```{r}
+sum(noodle$Quantity)
+```
+
+banyak profit di 4 tahun
+```{r}
+sum(noodle$Profit)
+```
+
+persentase diskon (0%) (0-20%) (>20%)
+```{r}
+nol<- noodle[noodle$Discount==0,]
+knitr::kable(table(nol$Discount))
+```
+
+
+```{r}
+more0 <- noodle[noodle$Discount>0 & noodle$Discount<=0.8,]
+knitr::kable(table(more0$Discount))
+```
+
+category yang menghasilkan keuntungan tinggi
+```{r}
+xtabs(Profit~ Category, noodle)
+```
+
+kerugian transaksi tertinggi
+```{r}
+noodle[noodle$Profit==-6599.978,]
+```
+
+
+profit yang tertitnggi 
+```{r}
+xtabs(Profit~ Segment, noodle)
+```
+
+nomor sales berdasarkan categorr
+```{r}
+xtabs(Sales~ Category, noodle)
+```
+
+keuntungan bdsrkan shift mode + segment
+```{r}
+xtabs(Profit~Segment+Ship.Mode,noodle)
+```
+
+```{r}
+plot(xtabs(Profit~Segment+Ship.Mode,noodle))
+```
+
+Penjual dengan jumlah tertinggi berdasarkan categori
+```{r}
+xtabs(Quantity~Category,noodle)
+```
+
+
+Glimpse di categori
+```{r}
+graphics::pie(xtabs(~ Category, noodle))
+```
+
+```{r}
+xtabs(~ Category + Quantity, noodle)
+```
+
+```{r}
+#noodle$Stars.Range <-c("0-1", "1-2", "2-3", "3-4", "4-5")[findInterval(as.numeric(as.character(noodle$Stars)) , c(0, 1, 2, 3, 4, Inf) )]
+#xtabs(~ Category + Quantity, noodle)
+#xtabs(~ Stars.Range + Quantity, noodle)
+#graphics::barplot(xtabs(~ Category + Quantity, noodle)
+```
+
+
+```{r}
+#sum(noodle$Profit)
+```
